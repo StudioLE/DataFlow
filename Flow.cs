@@ -19,11 +19,40 @@ namespace Flow
 
         BlockingCollection<object>[] _buffers;
 
+        int bufferIndex;
+
         public event Action<object> Finished;
 
         public void AddStep(Func<object, object> stepFunc)
         {
             _steps.Add(stepFunc);
+        }
+
+        void RunStep(Func<object, object> step)
+        {
+            var bufferIndexLocal = bufferIndex; // so it remains the same in each thread
+            Task.Run(() =>
+            {
+                // 'GetConsumingEnumerable' is blocking when the collection is empty
+                foreach (var input in _buffers[bufferIndexLocal].GetConsumingEnumerable())
+                {
+                    var output = step.Invoke(input);
+
+                    bool isLastStep = bufferIndexLocal == _steps.Count - 1;
+                    if (isLastStep)
+                    {
+                        // This is dangerous as the invocation is added to the last step
+                        // Alternatively, you can utilize 'BeginInvoke' like here: https://stackoverflow.com/a/16336361/1229063
+                        Finished?.Invoke(output);
+                    }
+                    else
+                    {
+                        var next = _buffers[bufferIndexLocal + 1];
+                        next.Add(output); // output will be stored as object
+                    }
+                }
+            });
+            bufferIndex++;
         }
 
         public void Execute(object input)
@@ -38,33 +67,10 @@ namespace Flow
                 .Select(step => new BlockingCollection<object>())
                 .ToArray();
 
-            int bufferIndex = 0;
-            foreach (var step in _steps)
-            {
-                var bufferIndexLocal = bufferIndex; // so it remains the same in each thread
-                Task.Run(() =>
-                {
-                    // 'GetConsumingEnumerable' is blocking when the collection is empty
-                    foreach (var input in _buffers[bufferIndexLocal].GetConsumingEnumerable())
-                    {
-                        var output = step.Invoke(input);
+            bufferIndex = 0;
 
-                        bool isLastStep = bufferIndexLocal == _steps.Count - 1;
-                        if (isLastStep)
-                        {
-                            // This is dangerous as the invocation is added to the last step
-                            // Alternatively, you can utilize 'BeginInvoke' like here: https://stackoverflow.com/a/16336361/1229063
-                            Finished?.Invoke(output);
-                        }
-                        else
-                        {
-                            var next = _buffers[bufferIndexLocal + 1];
-                            next.Add(output); // output will be stored as object
-                        }
-                    }
-                });
-                bufferIndex++;
-            }
+            _steps.ForEach(RunStep);
+
             return this;
         }
     }
