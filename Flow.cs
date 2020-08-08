@@ -7,15 +7,15 @@ using System.Collections.Concurrent;
 
 namespace Flow
 {
-    public interface IPipeline
+    public interface IFlow
     {
         void Execute(object input);
         event Action<object> Finished;
     }
 
-    public class CastingPipelineBuilder : IPipeline
+    public class FlowBuilder : IFlow
     {
-        List<Func<object, object>> _pipelineSteps = new List<Func<object, object>>();
+        List<Func<object, object>> _steps = new List<Func<object, object>>();
 
         BlockingCollection<object>[] _buffers;
 
@@ -23,7 +23,7 @@ namespace Flow
 
         public void AddStep(Func<object, object> stepFunc)
         {
-            _pipelineSteps.Add(stepFunc);
+            _steps.Add(stepFunc);
         }
 
         public void Execute(object input)
@@ -32,14 +32,14 @@ namespace Flow
             first.Add(input);
         }
 
-        public IPipeline GetPipeline()
+        public IFlow Flow()
         {
-            _buffers = _pipelineSteps // Create buffers
+            _buffers = _steps // Create buffers
                 .Select(step => new BlockingCollection<object>())
                 .ToArray();
 
             int bufferIndex = 0;
-            foreach (var pipelineStep in _pipelineSteps)
+            foreach (var step in _steps)
             {
                 var bufferIndexLocal = bufferIndex; // so it remains the same in each thread
                 Task.Run(() =>
@@ -47,9 +47,9 @@ namespace Flow
                     // 'GetConsumingEnumerable' is blocking when the collection is empty
                     foreach (var input in _buffers[bufferIndexLocal].GetConsumingEnumerable())
                     {
-                        var output = pipelineStep.Invoke(input);
+                        var output = step.Invoke(input);
 
-                        bool isLastStep = bufferIndexLocal == _pipelineSteps.Count - 1;
+                        bool isLastStep = bufferIndexLocal == _steps.Count - 1;
                         if (isLastStep)
                         {
                             // This is dangerous as the invocation is added to the last step

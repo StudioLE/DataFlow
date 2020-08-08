@@ -18,17 +18,17 @@ namespace Flow
 
         static void BlockingCollectionExample()
         {
-            var builder = new CastingPipelineBuilder();
+            var builder = new FlowBuilder();
 
             //casting from object is needed on each step
             builder.AddStep(input => FindMostCommon(input as string));
             builder.AddStep(input => (input as string).Length);
             builder.AddStep(input => ((int)input) % 2 == 1);
 
-            var pipeline = builder.GetPipeline();
+            var flow = builder.Flow();
 
-            pipeline.Finished += res => Console.WriteLine(res);
-            pipeline.Execute("The pipeline pattern is the best pattern");
+            flow.Finished += res => Console.WriteLine(res);
+            flow.Execute("The pipeline pattern is the best pattern");
             // 'True' is printed because 'pattern' is the most common with 7 chars and it's an odd number
             // ...
         }
