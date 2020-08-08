@@ -20,8 +20,6 @@ namespace Flow
 
         static void BlockingCollectionExample()
         {
-            var builder = new FlowBuilder();
-
             var solids = new List<Solid>()
             {
                 new Cuboid(1, 1, 1)  { Color = Color.Magenta }, // 0
@@ -39,28 +37,29 @@ namespace Flow
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            // Cuboids only
-            builder.AddStep<List<Solid>, List<Cuboid>>(input => CuboidFilter(input));
+            var flow = new Flow<List<Solid>, KnownColor>((start, builder) => start
 
-            // Mass greater than 2
-            builder.AddStep<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList());
+                // Cuboids only
+                .Step(builder, input => CuboidFilter(input))
 
-            // Colours
-            builder.AddStep<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList());
+                // Mass greater than 2
+                .Step(builder, input => input.Where(x => x.Mass > 2).ToList())
 
-            // At least half red
-            builder.AddStep<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList());
+                // Colours
+                .Step(builder, input => input.Select(x => x.Color).ToList())
 
-            // Order by blue
-            builder.AddStep<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList());
+                // At least half red
+                .Step(builder, input => input.Where(x => x.R >= 128).ToList())
 
-            // Highest blue
-            builder.AddStep<List<Color>, Color>(input => input.First());
+                // Order by blue
+                .Step(builder, input => input.OrderByDescending(x => x.B).ToList())
 
-            // Name of the colour
-            builder.AddStep<Color, KnownColor>(input => input.ToKnownColor());
+                // Highest blue
+                .Step(builder, input => input.First())
 
-            var flow = builder.Flow();
+                // Name of the colour
+                .Step(builder, input => input.ToKnownColor())
+            );
 
             flow.Finished += res => Console.WriteLine(res);
 
