@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,7 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Flow.cs" />
+    <Compile Include="Geometry\Cuboid.cs" />
+    <Compile Include="Geometry\Cylinder.cs" />
+    <Compile Include="Geometry\Solid.cs" />
+    <Compile Include="Geometry\Sphere.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
