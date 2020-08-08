@@ -23,9 +23,10 @@ namespace Flow
 
         public event Action<object> Finished;
 
-        public void AddStep(Func<object, object> stepFunc)
+        public void AddStep<In, Out>(Func<In, Out> stepFunc)
         {
-            _steps.Add(stepFunc);
+            _steps.Add(objInput => 
+                stepFunc.Invoke((In)(object)objInput));
         }
 
         void RunStep(Func<object, object> step)

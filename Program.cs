@@ -40,25 +40,25 @@ namespace Flow
             };
 
             // Cuboids only
-            builder.AddStep(input => CuboidFilter(input as List<Solid>));
+            builder.AddStep<List<Solid>, List<Cuboid>>(input => CuboidFilter(input));
 
             // Mass greater than 2
-            builder.AddStep(input => (input as List<Cuboid>).Where(x => x.Mass > 2).ToList());
+            builder.AddStep<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList());
 
             // Colours
-            builder.AddStep(input => (input as List<Cuboid>).Select(x => x.Color).ToList());
+            builder.AddStep<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList());
 
             // At least half red
-            builder.AddStep(input => (input as List<Color>).Where(x => x.R >= 128).ToList());
+            builder.AddStep<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList());
 
             // Order by blue
-            builder.AddStep(input => (input as List<Color>).OrderByDescending(x => x.B).ToList());
+            builder.AddStep<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList());
 
             // Highest blue
-            builder.AddStep(input => (input as List<Color>).First());
+            builder.AddStep<List<Color>, Color>(input => input.First());
 
             // Name of the colour
-            builder.AddStep(input => ((Color)input).ToKnownColor());
+            builder.AddStep<Color, KnownColor>(input => input.ToKnownColor());
 
             var flow = builder.Flow();
 
