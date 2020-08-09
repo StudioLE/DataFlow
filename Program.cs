@@ -38,90 +38,37 @@ namespace Flow
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            var flow = CreateFlow();
+            var flow = new Flow<List<Solid>, KnownColor>()
 
-            var tcs = new TaskCompletionSource<KnownColor>();
+                // Cuboids only
+                .AddStep<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))
 
-            var tc = new TC<List<Solid>, KnownColor>(solids, tcs);
+                // Mass greater than 2
+                .AddStep<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList())
 
-            var task = tcs.Task;
+                // Colours
+                .AddStep<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList())
 
-            await flow.SendAsync(tc);
+                // At least half red
+                .AddStep<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList())
 
-            var result = await task;
+                // Order by blue
+                .AddStep<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList())
+
+                // Highest blue
+                .AddStep<List<Color>, Color>(input => input.First())
+
+                // Name of the colour
+                .AddStep<Color, KnownColor>(input => input.ToKnownColor())
+
+                // Set the last step as the result
+                .CreateFlow();
+
+            // Execute the flow using the solids list as the input
+            var result = await flow.Execute(solids);
 
             Console.WriteLine(result);
             // After execution completes we should see "Fuchsia" printed to the console
-        }
-
-        public static TransformBlock<TC<List<Solid>, KnownColor>, TC<List<Cuboid>, KnownColor>> CreateFlow()
-        {
-            // Cuboids only
-            var step1 = new TransformBlock<TC<List<Solid>, KnownColor>, TC<List<Cuboid>, KnownColor>>(
-                tc => new TC<List<Cuboid>, KnownColor> (
-                    CuboidFilter(tc.Input),
-                    tc.TaskCompletionSource
-                )
-           );
-
-            // Mass greater than 2
-            var step2 = new TransformBlock<TC<List<Cuboid>, KnownColor>, TC<List<Cuboid>, KnownColor>>(
-                tc => new TC<List<Cuboid>, KnownColor>(
-                    tc.Input.Where(x => x.Mass > 2).ToList(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            // Colours
-            var step3 = new TransformBlock<TC<List<Cuboid>, KnownColor>, TC<List<Color>, KnownColor>>(
-                tc => new TC<List<Color>, KnownColor>(
-                    tc.Input.Select(x => x.Color).ToList(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            // At least half red
-            var step4 = new TransformBlock<TC<List<Color>, KnownColor>, TC<List<Color>, KnownColor>>(
-                tc => new TC<List<Color>, KnownColor>(
-                    tc.Input.Where(x => x.R >= 128).ToList(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            // Order by blue
-            var step5 = new TransformBlock<TC<List<Color>, KnownColor>, TC<List<Color>, KnownColor>>(
-                tc => new TC<List<Color>, KnownColor>(
-                    tc.Input.OrderByDescending(x => x.B).ToList(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            // Highest blue
-            var step6 = new TransformBlock<TC<List<Color>, KnownColor>, TC<Color, KnownColor>>(
-                tc => new TC<Color, KnownColor>(
-                    tc.Input.First(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            // Name of the colour
-            var step7 = new TransformBlock<TC<Color, KnownColor>, TC<KnownColor, KnownColor>>(
-                tc => new TC<KnownColor, KnownColor>(
-                    tc.Input.ToKnownColor(),
-                    tc.TaskCompletionSource
-                )
-            );
-
-            var setResultStep = new ActionBlock<TC<KnownColor, KnownColor>>(tc => tc.TaskCompletionSource.SetResult(tc.Input));
-
-            step1.LinkTo(step2, new DataflowLinkOptions());
-            step2.LinkTo(step3, new DataflowLinkOptions());
-            step3.LinkTo(step4, new DataflowLinkOptions());
-            step4.LinkTo(step5, new DataflowLinkOptions());
-            step5.LinkTo(step6, new DataflowLinkOptions());
-            step6.LinkTo(step7, new DataflowLinkOptions());
-            step7.LinkTo(setResultStep, new DataflowLinkOptions());
-            return step1;
         }
 
         static List<Cuboid> CuboidFilter(List<Solid> input)
