@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Geometry;
 
 namespace Flow
@@ -37,36 +38,47 @@ namespace Flow
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            var flow = new Flow<List<Solid>, KnownColor>((start, builder) => start
-
-                // Cuboids only
-                .Step(builder, input => CuboidFilter(input))
-
-                // Mass greater than 2
-                .Step(builder, input => input.Where(x => x.Mass > 2).ToList())
-
-                // Colours
-                .Step(builder, input => input.Select(x => x.Color).ToList())
-
-                // At least half red
-                .Step(builder, input => input.Where(x => x.R >= 128).ToList())
-
-                // Order by blue
-                .Step(builder, input => input.OrderByDescending(x => x.B).ToList())
-
-                // Highest blue
-                .Step(builder, input => input.First())
-
-                // Name of the colour
-                .Step(builder, input => input.ToKnownColor())
-            );
-
-            flow.Finished += res => Console.WriteLine(res);
-
-            flow.Execute(solids);
+            var flow = CreateFlow(
+                resultCallback: res => Console.WriteLine(res));
+            
+            flow.Post(solids);
             // After execution completes we should see "Fuchsia" printed to the console
         }
 
+        public static TransformBlock<List<Solid>, List<Cuboid>> CreateFlow(Action<KnownColor> resultCallback)
+        {
+            // Cuboids only
+            var step1 = new TransformBlock<List<Solid>, List<Cuboid>>(input => CuboidFilter(input));
+
+            // Mass greater than 2
+            var step2 = new TransformBlock<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList());
+
+            // Colours
+            var step3 = new TransformBlock<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList());
+
+            // At least half red
+            var step4 = new TransformBlock<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList());
+
+            // Order by blue
+            var step5 = new TransformBlock<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList());
+
+            // Highest blue
+            var step6 = new TransformBlock<List<Color>, Color>(input => input.First());
+
+            // Name of the colour
+            var step7 = new TransformBlock<Color, KnownColor>(input => input.ToKnownColor());
+
+            var callbackStep = new ActionBlock<KnownColor>(resultCallback);
+
+            step1.LinkTo(step2, new DataflowLinkOptions());
+            step2.LinkTo(step3, new DataflowLinkOptions());
+            step3.LinkTo(step4, new DataflowLinkOptions());
+            step4.LinkTo(step5, new DataflowLinkOptions());
+            step5.LinkTo(step6, new DataflowLinkOptions());
+            step6.LinkTo(step7, new DataflowLinkOptions());
+            step7.LinkTo(callbackStep);
+            return step1;
+        }
 
         static List<Cuboid> CuboidFilter(List<Solid> input)
         {
