@@ -25,6 +25,8 @@ namespace Flow
         {
             var step = new TransformBlock<TC<TLocalIn, TOut>, TC<TLocalOut, TOut>>((tc) =>
             {
+                DebugStep(tc.Input);
+
                 try
                 {
                     return new TC<TLocalOut, TOut>(stepFunc(tc.Input), tc.TaskCompletionSource);
@@ -65,6 +67,22 @@ namespace Flow
             var tcs = new TaskCompletionSource<TOut>();
             firstStep.SendAsync(new TC<TIn, TOut>(input, tcs));
             return tcs.Task;
+        }
+
+        private void DebugStep(object input)
+        {
+            var msg = $"IN: {input.GetType().Name}";
+
+            System.Collections.ICollection collection = input as System.Collections.ICollection;
+            if (collection != null)
+            {
+                var colType = collection.GetType().GetGenericArguments()[0];
+                msg += $"<{colType}>({collection.Count})";
+            }
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(msg);
+            Console.ResetColor();
         }
     }
 }
