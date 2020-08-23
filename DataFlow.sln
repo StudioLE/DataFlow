@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30225.117
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFlow", "DataFlow\DataFlow.csproj", "{FE534C1B-9364-4E8D-877D-19EBDD67722A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataFlow", "DataFlow\DataFlow.csproj", "{FE534C1B-9364-4E8D-877D-19EBDD67722A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFlow.Tests", "DataFlow.Tests\DataFlow.Tests.csproj", "{8F9E82B6-C609-4A31-A66F-305B604D4032}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Geometry", "..\Geometry\Geometry\Geometry.csproj", "{C9EA2094-4E95-4AC6-8F06-91BD4FA32AAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{FE534C1B-9364-4E8D-877D-19EBDD67722A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE534C1B-9364-4E8D-877D-19EBDD67722A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE534C1B-9364-4E8D-877D-19EBDD67722A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F9E82B6-C609-4A31-A66F-305B604D4032}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9E82B6-C609-4A31-A66F-305B604D4032}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9E82B6-C609-4A31-A66F-305B604D4032}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F9E82B6-C609-4A31-A66F-305B604D4032}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9EA2094-4E95-4AC6-8F06-91BD4FA32AAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9EA2094-4E95-4AC6-8F06-91BD4FA32AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9EA2094-4E95-4AC6-8F06-91BD4FA32AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9EA2094-4E95-4AC6-8F06-91BD4FA32AAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

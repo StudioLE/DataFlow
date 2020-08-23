@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace Flow
+namespace StudioLE.DataFlow
 {
     public class TC<TInput, TOutput>
     {

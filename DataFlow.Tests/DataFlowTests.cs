@@ -1,25 +1,25 @@
-﻿using System;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+using StudioLE.DataFlow;
 using StudioLE.Geometry;
 
-namespace Flow
+namespace DataFlow.Tests
 {
-    class Program
+    public class DataFlowTests
     {
-        static async Task Main(string[] args)
+        [SetUp]
+        public void Setup()
         {
-            await BlockingCollectionExampleAsync();
 
-            Console.WriteLine("Press any key to exit.");
-            Console.ReadKey();
         }
 
-        static async Task BlockingCollectionExampleAsync()
+        [Test]
+        public async Task DataFlow_EndToEnd()
         {
             var solids = new List<Solid>()
             {
@@ -69,6 +69,9 @@ namespace Flow
 
             Console.WriteLine(result);
             // After execution completes we should see "Fuchsia" printed to the console
+
+            var expect = KnownColor.Fuchsia;
+            Assert.AreEqual(expect, result, "Result was not Fuchsia");
         }
 
         static List<Cuboid> CuboidFilter(List<Solid> input)
@@ -77,5 +80,7 @@ namespace Flow
                 .Cast<Cuboid>()
                 .ToList();
         }
+
+
     }
 }
