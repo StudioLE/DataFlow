@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Geometry, Version=0.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\StudioLE.Geometry.0.0.4\lib\netstandard2.0\Geometry.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -47,12 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Geometry\Cube.cs" />
     <Compile Include="Flow.cs" />
-    <Compile Include="Geometry\Cuboid.cs" />
-    <Compile Include="Geometry\Cylinder.cs" />
-    <Compile Include="Geometry\Solid.cs" />
-    <Compile Include="Geometry\Sphere.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
