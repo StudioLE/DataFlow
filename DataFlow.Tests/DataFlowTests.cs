@@ -38,7 +38,7 @@ namespace DataFlow.Tests
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            var flow = new Flow<List<Solid>, KnownColor>()
+            var flow = new DataFlow<List<Solid>, KnownColor>()
 
                 // Cuboids only
                 .AddStep<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))

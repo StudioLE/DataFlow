@@ -18,10 +18,10 @@ namespace StudioLE.DataFlow
         public TaskCompletionSource<TOutput> TaskCompletionSource { get; set; }
     }
 
-    public class Flow<TIn, TOut>
+    public class DataFlow<TIn, TOut>
     {
         private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
-        public Flow<TIn, TOut> AddStep<TLocalIn, TLocalOut>(Func<TLocalIn, TLocalOut> stepFunc)
+        public DataFlow<TIn, TOut> AddStep<TLocalIn, TLocalOut>(Func<TLocalIn, TLocalOut> stepFunc)
         {
             var step = new TransformBlock<TC<TLocalIn, TOut>, TC<TLocalOut, TOut>>((tc) =>
             {
@@ -51,7 +51,7 @@ namespace StudioLE.DataFlow
             return this;
         }
 
-        public Flow<TIn, TOut> CreateFlow()
+        public DataFlow<TIn, TOut> CreateFlow()
         {
             var setResultStep =
                 new ActionBlock<TC<TOut, TOut>>((tc) => tc.TaskCompletionSource.SetResult(tc.Input));
