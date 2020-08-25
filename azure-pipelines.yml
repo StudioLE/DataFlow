@@ -1,0 +1,124 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+# Build name
+name: '$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)'
+
+# the build will trigger on any changes to the master branch
+trigger:
+- master
+
+# the build will run on a Microsoft hosted agent, using the lastest Windows VM Image
+pool:
+  vmImage: 'windows-latest'
+
+# these variables are available throughout the build file
+# just the build configuration is defined, in this case we are building Release packages
+variables:
+  buildConfiguration: 'Release'
+  csproj: 'DataFlow/DataFlow.csproj'
+  solution: 'DataFlow.sln'
+
+jobs:
+- job: Test
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Tests'
+    inputs:
+      command: 'test'
+      projects: '$(solution)'
+      arguments: '/p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./coverage/'
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish Coverage'
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage/coverage.cobertura.xml'
+      failIfCoverageEmpty: true
+
+
+- job: Build
+  dependsOn: Test
+  steps:
+  - task: CmdLine@2
+    displayName: 'Set Env Variables'
+    inputs:
+      script: |
+        echo $(Build.SourceVersion)
+        set  FullHash=$(Build.SourceVersion)
+        set Hash=%FullHash:~0,7%
+        echo %Hash%
+        echo ##vso[task.setvariable variable=Hash]%Hash%
+        
+        echo $(Build.BuildNumber)
+        set  BuildNumber=$(Build.BuildNumber)
+        echo %BuildNumber%-%Hash%
+        set  VersionNumber=%BuildNumber%-%Hash%
+        echo ##vso[task.setvariable variable=VersionNumber]%VersionNumber%
+  # - task: Bash@3
+  #   displayName: 'Print Env Variables'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: 'env | sort'
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Project'
+    inputs:
+      command: 'build'
+      arguments: '--configuration $(buildConfiguration)'
+      projects: '$(csproj)'
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack Canary NuGet'
+    inputs:
+      command: 'pack'
+      packagesToPack: '$(csproj)'
+      packDirectory: '$(Build.ArtifactStagingDirectory)/Canary'
+      nobuild: true
+      versioningScheme: 'byEnvVar'
+      versionEnvVar: 'VERSIONNUMBER'
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Canary NuGet Artifact'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/Canary'
+      artifact: 'Canary'
+      publishLocation: 'pipeline'
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack Release NuGet'
+    inputs:
+      command: 'pack'
+      packagesToPack: '$(csproj)'
+      packDirectory: '$(Build.ArtifactStagingDirectory)/Release'
+      nobuild: true
+      versioningScheme: 'off'
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Release NuGet Artifact'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/Release'
+      artifact: 'Release'
+      publishLocation: 'pipeline'
+
+
+- job: Deploy_Canary
+  displayName: 'Deploy Canary'
+  dependsOn: Build
+  steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download NuGet Artifact'
+    inputs:
+      buildType: 'current'
+      artifactName: 'Canary'
+      itemPattern: |
+        *.nupkg
+        !*.symbols.nupkg
+      targetPath: '$(Pipeline.Workspace)'
+  - task: NuGetCommand@2
+    displayName: 'Deploy to Canary Feed'
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Pipeline.Workspace)/**/*.nupkg;!$(Pipeline.Workspace)/**/*.symbols.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: '1583421a-8ea4-4552-8169-e93d4131d2f9'
+      allowPackageConflicts: true
