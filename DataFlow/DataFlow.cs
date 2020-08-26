@@ -21,6 +21,9 @@ namespace StudioLE.DataFlow
     public class DataFlow<TIn, TOut>
     {
         private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
+
+        private bool _created = false;
+
         public DataFlow<TIn, TOut> Add<TLocalIn, TLocalOut>(Func<TLocalIn, TLocalOut> stepFunc)
         {
             var step = new TransformBlock<TC<TLocalIn, TOut>, TC<TLocalOut, TOut>>((tc) =>
@@ -51,18 +54,23 @@ namespace StudioLE.DataFlow
             return this;
         }
 
-        public DataFlow<TIn, TOut> Create()
+        private void Create()
         {
+            if (_created)
+                throw new InvalidOperationException("Create was called on a DataFlow that is already created");
+            
             var setResultStep =
                 new ActionBlock<TC<TOut, TOut>>((tc) => tc.TaskCompletionSource.SetResult(tc.Input));
             var lastStep = _transformBlocks.Last();
             var setResultBlock = (lastStep as ISourceBlock<TC<TOut, TOut>>);
             setResultBlock.LinkTo(setResultStep);
-            return this;
+            _created = true;
         }
 
         public Task<TOut> Execute(TIn input)
         {
+            if (!_created)
+                Create();
             var firstStep = _transformBlocks[0] as ITargetBlock<TC<TIn, TOut>>;
             var tcs = new TaskCompletionSource<TOut>();
             firstStep.SendAsync(new TC<TIn, TOut>(input, tcs));

@@ -12,16 +12,14 @@ namespace DataFlow.Tests
 {
     public class DataFlowTests
     {
+        private List<Solid> solids;
+
+        private DataFlow<List<Solid>, KnownColor> flow;
+
         [SetUp]
         public void Setup()
         {
-
-        }
-
-        [Test]
-        public async Task DataFlow_EndToEnd()
-        {
-            var solids = new List<Solid>()
+            solids = new List<Solid>
             {
                 new Cuboid(1, 1, 1)  { Color = Color.Magenta }, // 0
                 new Cuboid(1, 1, 2)  { Color = Color.Cyan },    // 1
@@ -38,7 +36,7 @@ namespace DataFlow.Tests
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            var flow = new DataFlow<List<Solid>, KnownColor>()
+            flow = new DataFlow<List<Solid>, KnownColor>()
 
                 // Cuboids only
                 .Add<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))
@@ -59,19 +57,43 @@ namespace DataFlow.Tests
                 .Add<List<Color>, Color>(input => input.First())
 
                 // Name of the colour
-                .Add<Color, KnownColor>(input => input.ToKnownColor())
+                .Add<Color, KnownColor>(input => input.ToKnownColor());
+        }
 
-                // Set the last step as the result
-                .Create();
-
+        [Test]
+        public async Task DataFlow_EndToEnd()
+        {
             // Execute the flow using the solids list as the input
-            var result = await flow.Execute(solids);
+            KnownColor result = await flow.Execute(solids);
 
             Console.WriteLine(result);
-            // After execution completes we should see "Fuchsia" printed to the console
 
+            // After execution completes we should see "Fuchsia" printed to the console
             var expect = KnownColor.Fuchsia;
             Assert.AreEqual(expect, result, "Result was not Fuchsia");
+        }
+
+        [TestCase(100)]
+        public void DataFlow_EndToEndMultiple(int count)
+        {
+            var tasks = new List<Task<KnownColor>>();
+
+            for (int i = 0; i < count; i++)
+            {
+                // Execute the flow using the solids list as the input
+                tasks.Add(flow.Execute(solids));
+            }
+
+            // Wait for all to complete
+            Task.WaitAll(tasks.ToArray());
+
+            // Extract the results
+            List<KnownColor> results = tasks.Select(x => x.Result).ToList();
+            Console.WriteLine(results);
+
+            // After execution completes we should see "Fuchsia" printed to the console
+            var expect = KnownColor.Fuchsia;
+            Assert.AreEqual(count, results.Count(x => x == expect), $"Expected {count} results to equal Fuchsia");
         }
 
         static List<Cuboid> CuboidFilter(List<Solid> input)
