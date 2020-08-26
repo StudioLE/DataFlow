@@ -41,28 +41,28 @@ namespace DataFlow.Tests
             var flow = new DataFlow<List<Solid>, KnownColor>()
 
                 // Cuboids only
-                .AddStep<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))
+                .Add<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))
 
                 // Mass greater than 2
-                .AddStep<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList())
+                .Add<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList())
 
                 // Colours
-                .AddStep<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList())
+                .Add<List<Cuboid>, List<Color>>(input => input.Select(x => x.Color).ToList())
 
                 // At least half red
-                .AddStep<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList())
+                .Add<List<Color>, List<Color>>(input => input.Where(x => x.R >= 128).ToList())
 
                 // Order by blue
-                .AddStep<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList())
+                .Add<List<Color>, List<Color>>(input => input.OrderByDescending(x => x.B).ToList())
 
                 // Highest blue
-                .AddStep<List<Color>, Color>(input => input.First())
+                .Add<List<Color>, Color>(input => input.First())
 
                 // Name of the colour
-                .AddStep<Color, KnownColor>(input => input.ToKnownColor())
+                .Add<Color, KnownColor>(input => input.ToKnownColor())
 
                 // Set the last step as the result
-                .CreateFlow();
+                .Create();
 
             // Execute the flow using the solids list as the input
             var result = await flow.Execute(solids);
