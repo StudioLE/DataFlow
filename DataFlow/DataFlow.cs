@@ -22,6 +22,10 @@ namespace StudioLE.DataFlow
     {
         public bool Debug { get; set; } = false;
 
+        public int MaxDegreeOfParallelism { get; set; } = 1;
+
+        public int BoundedCapacity { get; set; } = -1;
+
         private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
 
         private bool _created = false;
@@ -42,6 +46,10 @@ namespace StudioLE.DataFlow
                     tc.TaskCompletionSource.SetException(e);
                     return new TC<TLocalOut, TOut>(default(TLocalOut), tc.TaskCompletionSource);
                 }
+            }, new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = MaxDegreeOfParallelism,
+                BoundedCapacity = BoundedCapacity
             });
 
             if (_transformBlocks.Count > 0)
