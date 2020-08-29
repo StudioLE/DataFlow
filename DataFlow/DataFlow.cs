@@ -21,14 +21,15 @@ namespace StudioLE.DataFlow
     public class DataFlow<TIn, TOut>
     {
         public bool Debug { get; set; } = false;
-
-        public int MaxDegreeOfParallelism { get; set; } = 1;
-
-        public int BoundedCapacity { get; set; } = -1;
+        private ExecutionDataflowBlockOptions Options { get; }
 
         private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
 
         private bool _created = false;
+
+        public DataFlow() => Options = new ExecutionDataflowBlockOptions();
+
+        public DataFlow(ExecutionDataflowBlockOptions options) => Options = options;
 
         public DataFlow<TIn, TOut> Add<TLocalIn, TLocalOut>(Func<TLocalIn, TLocalOut> stepFunc)
         {
@@ -46,11 +47,7 @@ namespace StudioLE.DataFlow
                     tc.TaskCompletionSource.SetException(e);
                     return new TC<TLocalOut, TOut>(default(TLocalOut), tc.TaskCompletionSource);
                 }
-            }, new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = MaxDegreeOfParallelism,
-                BoundedCapacity = BoundedCapacity
-            });
+            }, Options);
 
             if (_transformBlocks.Count > 0)
             {
