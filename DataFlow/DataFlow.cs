@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,11 +22,12 @@ namespace StudioLE.DataFlow
     public class DataFlow<TIn, TOut>
     {
         public bool Debug { get; set; } = false;
+
         private ExecutionDataflowBlockOptions Options { get; }
 
-        private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
+        private List<IDataflowBlock> Blocks { get; } = new List<IDataflowBlock>();
 
-        private bool _created = false;
+        private bool Created { get; set; } = false;
 
         public DataFlow() => Options = new ExecutionDataflowBlockOptions();
 
@@ -45,41 +47,41 @@ namespace StudioLE.DataFlow
                 catch (Exception e)
                 {
                     tc.TaskCompletionSource.SetException(e);
-                    return new TC<TLocalOut, TOut>(default(TLocalOut), tc.TaskCompletionSource);
+                    return new TC<TLocalOut, TOut>(default, tc.TaskCompletionSource);
                 }
             }, Options);
 
-            if (_transformBlocks.Count > 0)
+            if (Blocks.Count > 0)
             {
-                var lastStep = _transformBlocks.Last();
+                var lastStep = Blocks.Last();
                 var targetBlock = (lastStep as ISourceBlock<TC<TLocalIn, TOut>>);
                 targetBlock.LinkTo(step, new DataflowLinkOptions(),
                     tc => !tc.TaskCompletionSource.Task.IsFaulted);
                 targetBlock.LinkTo(DataflowBlock.NullTarget<TC<TLocalIn, TOut>>(), new DataflowLinkOptions(),
                     tc => tc.TaskCompletionSource.Task.IsFaulted);
             }
-            _transformBlocks.Add(step);
+            Blocks.Add(step);
             return this;
         }
 
         private void Create()
         {
-            if (_created)
+            if (Created)
                 throw new InvalidOperationException("Create was called on a DataFlow that is already created");
             
             var setResultStep =
                 new ActionBlock<TC<TOut, TOut>>((tc) => tc.TaskCompletionSource.SetResult(tc.Input));
-            var lastStep = _transformBlocks.Last();
+            var lastStep = Blocks.Last();
             var setResultBlock = (lastStep as ISourceBlock<TC<TOut, TOut>>);
             setResultBlock.LinkTo(setResultStep);
-            _created = true;
+            Created = true;
         }
 
         public Task<TOut> Execute(TIn input)
         {
-            if (!_created)
+            if (!Created)
                 Create();
-            var firstStep = _transformBlocks[0] as ITargetBlock<TC<TIn, TOut>>;
+            var firstStep = Blocks[0] as ITargetBlock<TC<TIn, TOut>>;
             var tcs = new TaskCompletionSource<TOut>();
             firstStep.SendAsync(new TC<TIn, TOut>(input, tcs));
             return tcs.Task;
@@ -89,8 +91,7 @@ namespace StudioLE.DataFlow
         {
             var msg = $"IN: {input.GetType().Name}";
 
-            System.Collections.ICollection collection = input as System.Collections.ICollection;
-            if (collection != null)
+            if (input is ICollection collection)
             {
                 var colType = collection.GetType().GetGenericArguments()[0];
                 msg += $"<{colType}>({collection.Count})";
