@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
@@ -37,7 +36,7 @@ namespace StudioLE.DataFlow
         {
             var step = new TransformBlock<TC<TLocalIn, TOut>, TC<TLocalOut, TOut>>((tc) =>
             {
-                if(Debug)
+                if (Debug)
                     DebugStep(tc.Input);
 
                 try
@@ -68,7 +67,7 @@ namespace StudioLE.DataFlow
         {
             if (Created)
                 throw new InvalidOperationException("Create was called on a DataFlow that is already created");
-            
+
             var setResultStep =
                 new ActionBlock<TC<TOut, TOut>>((tc) => tc.TaskCompletionSource.SetResult(tc.Input));
             var lastStep = Blocks.Last();

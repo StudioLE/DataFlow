@@ -1,10 +1,10 @@
 ﻿using NUnit.Framework;
+using StudioLE.DataFlow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using StudioLE.DataFlow;
 
 namespace DataFlow.Tests
 {
@@ -31,9 +31,9 @@ namespace DataFlow.Tests
         {
             // Create a DataFlow
             var dataFlow = new DataFlow<Monitor, Monitor>(new ExecutionDataflowBlockOptions
-                {
-                    MaxDegreeOfParallelism = maxDegreeOfParallelism
-                })
+            {
+                MaxDegreeOfParallelism = maxDegreeOfParallelism
+            })
                 .Add<Monitor, Monitor>(x => x.SetStart())
                 .Add<Monitor, Monitor>(Utils.Wait)
                 .Add<Monitor, Monitor>(Utils.Wait)
@@ -77,10 +77,10 @@ namespace DataFlow.Tests
         {
             // Create a DataFlow
             var dataFlow = new DataFlow<Monitor, Monitor>(new ExecutionDataflowBlockOptions
-                {
-                    MaxDegreeOfParallelism = -1,
-                    BoundedCapacity = boundedCapacity
-                })
+            {
+                MaxDegreeOfParallelism = -1,
+                BoundedCapacity = boundedCapacity
+            })
                 .Add<Monitor, Monitor>(x => x.SetStart())
                 .Add<Monitor, Monitor>(Utils.Wait)
                 .Add<Monitor, Monitor>(Utils.Wait)

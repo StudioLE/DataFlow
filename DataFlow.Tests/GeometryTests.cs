@@ -1,12 +1,11 @@
 using NUnit.Framework;
+using StudioLE.DataFlow;
+using StudioLE.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using StudioLE.DataFlow;
-using StudioLE.Geometry;
 
 namespace DataFlow.Tests
 {
