@@ -10,16 +10,16 @@ using StudioLE.Geometry;
 
 namespace DataFlow.Tests
 {
-    public class DataFlowTests
+    public class GeometryTests
     {
-        private List<Solid> solids;
+        private List<Solid> Solids { get; set; }
 
-        private DataFlow<List<Solid>, KnownColor> flow;
+        private DataFlow<List<Solid>, KnownColor> Flow { get; set; }
 
         [SetUp]
         public void Setup()
         {
-            solids = new List<Solid>
+            Solids = new List<Solid>
             {
                 new Cuboid(1, 1, 1)  { Color = Color.Magenta }, // 0
                 new Cuboid(1, 1, 2)  { Color = Color.Cyan },    // 1
@@ -36,10 +36,10 @@ namespace DataFlow.Tests
                 new Cylinder(3, 6)   { Color = Color.Lavender } // 12
             };
 
-            flow = new DataFlow<List<Solid>, KnownColor>()
+            Flow = new DataFlow<List<Solid>, KnownColor>()
 
                 // Cuboids only
-                .Add<List<Solid>, List<Cuboid>>(input => CuboidFilter(input))
+                .Add<List<Solid>, List<Cuboid>>(CuboidFilter)
 
                 // Mass greater than 2
                 .Add<List<Cuboid>, List<Cuboid>>(input => input.Where(x => x.Mass > 2).ToList())
@@ -61,10 +61,10 @@ namespace DataFlow.Tests
         }
 
         [Test]
-        public async Task DataFlow_EndToEnd()
+        public async Task EndToEnd()
         {
             // Execute the flow using the solids list as the input
-            KnownColor result = await flow.Execute(solids);
+            KnownColor result = await Flow.Execute(Solids);
 
             Console.WriteLine(result);
 
@@ -74,14 +74,14 @@ namespace DataFlow.Tests
         }
 
         [TestCase(100)]
-        public void DataFlow_EndToEndMultiple(int count)
+        public void Multiple_EndToEnd(int count)
         {
             var tasks = new List<Task<KnownColor>>();
 
             for (int i = 0; i < count; i++)
             {
                 // Execute the flow using the solids list as the input
-                tasks.Add(flow.Execute(solids));
+                tasks.Add(Flow.Execute(Solids));
             }
 
             // Wait for all to complete
@@ -102,7 +102,5 @@ namespace DataFlow.Tests
                 .Cast<Cuboid>()
                 .ToList();
         }
-
-
     }
 }
