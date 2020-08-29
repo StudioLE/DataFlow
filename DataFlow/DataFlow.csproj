@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/StudioLE/DataFlow</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>StudioLE.Libraries.DataFlow</AssemblyName>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Description>This project is a sandbox for experimenting with C#, Azure Pipelines, NuGet, and other tools. If you're looking for an actual DataFlow library you should probably look elsewhere.</Description>
   </PropertyGroup>
 
