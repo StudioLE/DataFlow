@@ -20,6 +20,8 @@ namespace StudioLE.DataFlow
 
     public class DataFlow<TIn, TOut>
     {
+        public bool Debug { get; set; } = false;
+
         private List<IDataflowBlock> _transformBlocks = new List<IDataflowBlock>();
 
         private bool _created = false;
@@ -28,7 +30,8 @@ namespace StudioLE.DataFlow
         {
             var step = new TransformBlock<TC<TLocalIn, TOut>, TC<TLocalOut, TOut>>((tc) =>
             {
-                DebugStep(tc.Input);
+                if(Debug)
+                    DebugStep(tc.Input);
 
                 try
                 {
