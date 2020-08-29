@@ -7,6 +7,7 @@ using StudioLE.DataFlow;
 
 namespace DataFlow.Tests
 {
+    [TestFixture, Category("Parallel")]
     public class ParallelTests
     {
         private int Count { get; } = 12;
