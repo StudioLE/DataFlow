@@ -15,6 +15,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="StudioLE.Libraries.Geometry" Version="0.0.5" />
+    <PackageReference Include="StudioLE.Utils.General" Version="2020.9.25.1-6637259" />
   </ItemGroup>
 
   <ItemGroup>

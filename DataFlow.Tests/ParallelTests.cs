@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using StudioLE.DataFlow;
+using StudioLE.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,13 +50,13 @@ namespace DataFlow.Tests
             List<Monitor> results = tasks.Select(x => x.Result).ToList();
 
             // Extract the end times
-            List<double> endTimes = results.Select(x => Utils.RoundToPointFive(x.End)).ToList();
+            List<double> endTimes = results.Select(x => MathUtils.RoundTo(x.End, 0.5)).ToList();
 
             // Print all with Monitor.ToString()
             results.ForEach(Console.WriteLine);
 
             // Expected results
-            List<double> expect = Utils.SteppedRange(1, (Count / maxDegreeOfParallelism), 0.5)
+            List<double> expect = EnumerableUtils.Sequence(1, Count / maxDegreeOfParallelism, 0.5)
                 .SelectMany(x => Enumerable.Repeat(x, maxDegreeOfParallelism))
                 .ToList();
             //List<double> expect = new List<double>
@@ -66,7 +67,7 @@ namespace DataFlow.Tests
             //    2.5, 2.5, 2.5
             //};
             Console.WriteLine();
-            Assert.IsTrue(Utils.CompareLists(expect, endTimes), "Expected DataFlows to complete execution in specific time");
+            Assert.IsTrue(TestUtils.CompareLists(expect, endTimes), "Expected DataFlows to complete execution in specific time");
         }
 
         [TestCase(1)]
@@ -96,13 +97,13 @@ namespace DataFlow.Tests
             List<Monitor> results = tasks.Select(x => x.Result).ToList();
 
             // Extract the end times
-            List<double> endTimes = results.Select(x => Utils.RoundToPointFive(x.End)).ToList();
+            List<double> endTimes = results.Select(x => MathUtils.RoundTo(x.End, 0.5)).ToList();
 
             // Print all with Monitor.ToString()
             results.ForEach(Console.WriteLine);
 
             // Expected results
-            List<double> expect = Utils.SteppedRange(1, (Count / boundedCapacity), 0.5)
+            List<double> expect = EnumerableUtils.Sequence(1, (Count / boundedCapacity), 0.5)
                 .SelectMany(x => Enumerable.Repeat(x, boundedCapacity))
                 .ToList();
             //List<double> expect = new List<double>
@@ -113,7 +114,7 @@ namespace DataFlow.Tests
             //    2.5, 2.5, 2.5
             //};
             Console.WriteLine();
-            Assert.IsTrue(Utils.CompareLists(expect, endTimes), "Expected DataFlows to complete execution in specific time");
+            Assert.IsTrue(TestUtils.CompareLists(expect, endTimes), "Expected DataFlows to complete execution in specific time");
         }
     }
 }
